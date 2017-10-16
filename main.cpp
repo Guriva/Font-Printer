@@ -1,7 +1,11 @@
+#include <iostream>
 #include <stdio.h>
 #include <SDL.h>
+#include <string>
+#include "FontManager.h"
+using namespace std;
 
-bool init(SDL_Window* window, SDL_Surface* surface) {
+bool init(SDL_Window*& window, SDL_Surface*& surface) {
 	bool ret = true;
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -15,7 +19,7 @@ bool init(SDL_Window* window, SDL_Surface* surface) {
 			SDL_WINDOWPOS_UNDEFINED,           // initial y position
 			640,                               // width, in pixels
 			480,                               // height, in pixels
-			SDL_WINDOW_OPENGL                  // flags - see below
+			SDL_WINDOW_SHOWN                   // flags - see below
 		);
 		if (window == nullptr) {
 			printf("Failed to create window");
@@ -28,13 +32,13 @@ bool init(SDL_Window* window, SDL_Surface* surface) {
 	return ret;
 }
 
-bool loadMedia(SDL_Surface* image)
+bool loadMedia(SDL_Surface*& image)
 {
 	//Loading success flag
 	bool ret = true;
 
 	//Load splash image
-	image = SDL_LoadBMP("./hello_world.bmp");
+	image = SDL_LoadBMP("D:/Descargas/xenon2.bmp");
 	if (image == nullptr)
 	{
 		printf("Failed to load image");
@@ -44,7 +48,7 @@ bool loadMedia(SDL_Surface* image)
 	return ret;
 }
 
-void close(SDL_Surface* image, SDL_Window* window) {
+void close(SDL_Surface*& image, SDL_Window*& window) {
 	SDL_FreeSurface(image);
 	image = nullptr;
 
@@ -54,18 +58,50 @@ void close(SDL_Surface* image, SDL_Window* window) {
 	SDL_Quit();
 }
 
-int main(int argc, char ** argv)
+int main(int argc, char* args[])
 {
+	int count = 0;
 	SDL_Window *window = nullptr;
 	SDL_Surface *surface = nullptr;
 	SDL_Surface *image = nullptr;
 
-	if (init(window,surface)) {
-		SDL_BlitSurface(image,NULL,surface,NULL);
-		while (1) {
-			SDL_UpdateWindowSurface(window);
+	FontManager* FManager = new FontManager();
+	//string text = "NomNomNomNom";
+
+	//example text on screen before mapping the font in FontManager
+	SDL_Rect rectImage;
+	rectImage.x = 37; rectImage.y = 0;
+	rectImage.w = 15;
+	rectImage.h = 23;
+	SDL_Rect rectWindow;
+	rectWindow.x = 640/2; rectWindow.y = 480/2;
+	rectWindow.w = 15;
+	rectWindow.h = 23;
+
+
+	if (!init(window, surface)) {
+		printf("Failed to initialize");
+	}
+	else {
+		if (!loadMedia(image)) {
+			printf("Failed to load media");
+		}
+		else {
+			while (1) {
+				SDL_FillRect(surface, NULL, 0x000000);
+				SDL_BlitSurface(image, &rectImage, surface, &rectWindow);
+				SDL_UpdateWindowSurface(window);
+				if (count >= 5) {
+					++rectWindow.x;
+					count = 0;
+				}
+				if (rectWindow.x > 640)
+					rectWindow.x = 0;
+				++count;
+			}
 		}
 	}
+	close(image,window);
 	return 0;
 }
 
