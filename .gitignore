@@ -29,8 +29,3 @@
 *.exe
 *.out
 *.app
-
-# Directories
-Debug/
-Release/
-.vs/

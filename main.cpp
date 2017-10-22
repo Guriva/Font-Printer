@@ -22,7 +22,7 @@ bool init(SDL_Window*& window, SDL_Surface*& surface) {
 			SDL_WINDOW_SHOWN                   // flags - see below
 		);
 		if (window == nullptr) {
-			printf("Failed to create window");
+			//printf("Failed to create window");
 			ret = false;
 		}
 		else {
@@ -38,7 +38,7 @@ bool loadMedia(SDL_Surface*& image)
 	bool ret = true;
 
 	//Load splash image
-	image = SDL_LoadBMP("D:/Descargas/xenon2.bmp");
+	image = SDL_LoadBMP("Fonts\\xenon2.bmp");
 	if (image == nullptr)
 	{
 		printf("Failed to load image");
@@ -48,10 +48,7 @@ bool loadMedia(SDL_Surface*& image)
 	return ret;
 }
 
-void close(SDL_Surface*& image, SDL_Window*& window) {
-	SDL_FreeSurface(image);
-	image = nullptr;
-
+void close(SDL_Window*& window) {
 	SDL_DestroyWindow(window);
 	window = nullptr;
 
@@ -60,59 +57,46 @@ void close(SDL_Surface*& image, SDL_Window*& window) {
 
 int main(int argc, char* args[])
 {
+	float time = 0;
 	int count = 0;
 	SDL_Window *window = nullptr;
 	SDL_Surface *surface = nullptr;
-	SDL_Surface *image = nullptr;
+	SDL_Surface *fontRed = nullptr;
+	SDL_Surface *fontYellow = nullptr;
+	SDL_Surface *fontBlue = nullptr;
 
 	FontManager* FManager = new FontManager();
-	//string text = "NomNomNomNom";
-
-	//example text on screen before mapping the font in FontManager
-	SDL_Rect rectImage;
-	rectImage.x = 37; rectImage.y = 0;
-	rectImage.w = 15;
-	rectImage.h = 23;
-	SDL_Rect rectWindow;
-	rectWindow.x = 640/2; rectWindow.y = 480/2;
-	rectWindow.w = 15;
-	rectWindow.h = 23;
-
 
 	if (!init(window, surface)) {
 		printf("Failed to initialize");
 	}
 	else {
-		if (!loadMedia(image)) {
-			printf("Failed to load media");
-		}
-		else {
-			while (1) {
-				SDL_FillRect(surface, NULL, 0x000000);
-				SDL_BlitSurface(image, &rectImage, surface, &rectWindow);
-				SDL_UpdateWindowSurface(window);
-				if (count >= 5) {
-					++rectWindow.x;
-					count = 0;
-				}
-				if (rectWindow.x > 640)
-					rectWindow.x = 0;
-				++count;
+		FManager->loadFont(fontRed, "red", "Fonts\\lemred.bmp", "!\"#$%&`()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_´abcdefghijklmnopqrstuvwxyz(|)~ ", 8, 17);
+		FManager->loadFont(fontYellow, "yellow", "Fonts\\lemyellow.bmp", "!\"#$%&`()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_´abcdefghijklmnopqrstuvwxyz(|)~ ", 8, 17);
+		FManager->loadFont(fontBlue, "blue", "Fonts\\lemblue.bmp", "!\"#$%&`()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_´abcdefghijklmnopqrstuvwxyz(|)~ ", 8, 17);
+		char* text = "Ohayooo";
+		int x = 50;
+		int y = 100;
+		int incrementX = 1;
+		int incrementY = 1;
+		while (1) {
+			SDL_FillRect(surface, NULL, 0x000000);
+			FManager->print(surface, text, x, y, "red");
+			//FManager->print(surface, "Desu neee!!", 50, 120, "blue");
+			SDL_UpdateWindowSurface(window);
+
+			//Bouncing effect
+			if (time > 1) {
+				x += incrementX;
+				y += incrementY;
+				if ((x + strlen(text) * FManager->getFontWidth("red") > 640) || (x < 0)) incrementX *= -1;
+				if ((y + FManager->getFontHeight("red") > 480) || (y < 0)) incrementY *= -1;
+				time = 0.f;
 			}
+			time += 0.1f;
 		}
 	}
-	close(image,window);
+	FManager->closeFontManager();
+	close(window);
 	return 0;
 }
-
-/*
-Objective: hacer funcion print(font,x,y,"text")
-Hacer update donde el texto se mueva por la pantalla horizontalmente en cada iteracion
-Cada font sera una classe con su textura y la tabla de traduccion (nos llega una A y imprimimos la letra associada a la A)
-FontManager: Carga todas las font en el Init, limpia espacio en el End
-- Alloc/Create: const Font *pRed = Alloc("Red");
-- print(pRed,x,y,"text");
-
-try __FILE__, __LINE__ :
-const Font *pRed = Alloc("Red",__FILE__,__LINE__);
-*/
